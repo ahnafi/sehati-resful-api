@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rules\Password;
 
 class UserRegisterRequest extends FormRequest
@@ -28,5 +29,12 @@ class UserRegisterRequest extends FormRequest
             "name" => "required|string|min:3|max:100",
             "address" => "nullable|string|max:255"
         ];
+    }
+
+    public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            "errors" => $validator->getMessageBag()
+        ], 400));
     }
 }
