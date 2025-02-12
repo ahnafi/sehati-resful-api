@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
+use Request;
 
 class AuthController extends Controller
 {
@@ -20,9 +21,11 @@ class AuthController extends Controller
         $token = $user->createToken("auth_token")->plainTextToken;
 
         return response()->json([
-            "user" => UserResource::make($user),
-            "token_type" => "Bearer",
-            "token" => $token,
+            "data" => [
+                "user" => UserResource::make($user),
+                "token_type" => "Bearer",
+                "token" => $token,
+            ]
         ], 201);
     }
 
@@ -43,9 +46,21 @@ class AuthController extends Controller
         $token = $user->createToken("auth_token")->plainTextToken;
 
         return response()->json([
-            "user" => UserResource::make($user),
-            "token_type" => "Bearer",
-            "token" => $token,
+            "data" => [
+                "user" => UserResource::make($user),
+                "token_type" => "Bearer",
+                "token" => $token,
+            ]
+        ]);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        // $request->user()->tokens()->delete(); delete token from all device 
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            "data" => true
         ]);
     }
 }
