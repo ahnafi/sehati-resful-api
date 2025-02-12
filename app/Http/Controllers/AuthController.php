@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UserRegisterRequest;
-use App\Http\Resources\UserResource;
+use Hash;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use App\Http\Requests\UserLoginRequest;
+use App\Http\Requests\UserRegisterRequest;
 
 class AuthController extends Controller
 {
@@ -23,5 +24,28 @@ class AuthController extends Controller
             "token_type" => "Bearer",
             "token" => $token,
         ], 201);
+    }
+
+    public function login(UserLoginRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $user = User::where("email", $data["email"])->first();
+
+        if (!$user || !Hash::check($data["password"], $user->password)) {
+            return response()->json([
+                "errors" => [
+                    "message" => ["Unauthorized"]
+                ]
+            ], 401);
+        }
+
+        $token = $user->createToken("auth_token")->plainTextToken;
+
+        return response()->json([
+            "user" => UserResource::make($user),
+            "token_type" => "Bearer",
+            "token" => $token,
+        ]);
     }
 }

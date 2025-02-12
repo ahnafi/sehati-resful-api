@@ -63,7 +63,7 @@ class AuthTest extends TestCase
                     ]
                 ]
             ]);
-    }
+    } 
 
     public function testUserRegisterFailedEmailHasAlreadyUsed()
     {
