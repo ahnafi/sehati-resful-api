@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
-use Request;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -56,12 +56,6 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        if (!$request->user()) {
-            return response()->json([
-                "errors" => ["message" => ["Unauthorized"]]
-            ], 401);
-        }
-
         // $request->user()->tokens()->delete(); delete token from all device 
         $request->user()->currentAccessToken()->delete();
 
