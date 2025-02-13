@@ -31,16 +31,18 @@ class AuthTest extends TestCase
                 "token_type" => "Bearer",
             ])
             ->assertJsonStructure([
-                "user" => [
-                    "id",
-                    "name",
-                    "email",
-                    "address",
-                    "created_at",
-                    "updated_at"
+                "data" => [
+                    "user" => [
+                        "id",
+                        "name",
+                        "email",
+                        "address",
+                        "created_at",
+                        "updated_at"
+                    ],
+                    "token_type",
+                    "token"
                 ],
-                "token_type",
-                "token"
             ]);
     }
 
@@ -63,7 +65,7 @@ class AuthTest extends TestCase
                     ]
                 ]
             ]);
-    } 
+    }
 
     public function testUserRegisterFailedEmailHasAlreadyUsed()
     {
@@ -82,4 +84,6 @@ class AuthTest extends TestCase
                 ]
             ]);
     }
+
+    // public 
 }
