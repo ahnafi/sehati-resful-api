@@ -142,4 +142,27 @@ class AuthTest extends TestCase
             ]);
     }
 
+    public function testUserLogout()
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken("auth_token")->plainTextToken;
+
+        $this->post("/api/users/logout", [], ["Authorization" => "Bearer $token"])
+            ->assertStatus(200)
+            ->assertJson([
+                "data" => true
+            ]);
+    }
+
+    public function testUserLogoutUnauthorized()
+    {
+        $this->post("/api/users/logout", [], ["Accept"=> "application/json"])
+            ->assertStatus(401)
+            ->assertJson([
+                "errors" => [
+                    "message" => ["Unauthorized"]
+                ]
+            ]);
+    }
+
 }
