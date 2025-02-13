@@ -23,12 +23,14 @@ class AuthTest extends TestCase
             "address" => "jalan sehati jiwa"
         ])->assertStatus(201)
             ->assertJson([
-                "user" => [
-                    "name" => "test",
-                    "email" => "text@example.com",
-                    "address" => "jalan sehati jiwa",
-                ],
-                "token_type" => "Bearer",
+                "data" => [
+                    "user" => [
+                        "name" => "test",
+                        "email" => "text@example.com",
+                        "address" => "jalan sehati jiwa",
+                    ],
+                    "token_type" => "Bearer",
+                ]
             ])
             ->assertJsonStructure([
                 "data" => [
@@ -85,5 +87,59 @@ class AuthTest extends TestCase
             ]);
     }
 
-    // public 
+    public function testUserLoginSuccess()
+    {
+        $this->testUserRegisterSuccess();
+
+        $this->post("/api/users/login", [
+            "email" => "text@example.com",
+            "password" => "Password11",
+        ])->assertStatus(200)
+            ->assertJsonStructure([
+                "data" => [
+                    "user" => [
+                        "id",
+                        "name",
+                        "email",
+                        "address",
+                        "created_at",
+                        "updated_at"
+                    ],
+                    "token_type",
+                    "token"
+                ],
+            ]);
+    }
+
+    public function testUserLoginFailed()
+    {
+        $this->post("/api/users/login", [
+            "email" => "text@example.com",
+            "password" => "Password11",
+        ])->assertStatus(401)
+            ->assertJson([
+                "errors" => [
+                    "message" => ["Unauthorized"]
+                ]
+            ]);
+    }
+
+    public function testUserLoginFailedEmailAndPasswordRequired()
+    {
+        $this->post("/api/users/login", [
+            // "email" => "text@example.com",
+            // "password" => "Password11",
+        ])->assertStatus(400)
+            ->assertJson([
+                "errors" => [
+                    "email" => [
+                        "The email field is required."
+                    ],
+                    "password" => [
+                        "The password field is required."
+                    ]
+                ]
+            ]);
+    }
+
 }
