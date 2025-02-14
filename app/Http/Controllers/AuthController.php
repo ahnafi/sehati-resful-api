@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForgotPasswordRequest;
 use Hash;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -9,6 +10,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use Illuminate\Http\Request;
+use Password;
 
 class AuthController extends Controller
 {
@@ -63,4 +65,26 @@ class AuthController extends Controller
             "data" => true
         ]);
     }
+
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $status = Password::sendResetLink(['email' => $data['email']]);
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json([
+                "data" => [
+                    "message" => [__($status)]
+                ]
+            ], 200);
+        }
+
+        return response()->json([
+            "errors" => [
+                "email" => [__($status)]
+            ]
+        ], 422);
+    }
+
 }
