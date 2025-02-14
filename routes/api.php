@@ -7,4 +7,4 @@ Route::post("/users/register", [AuthController::class, "register"])->name("users
 Route::post("/users/login", [AuthController::class, "login"])->name("users.login");
 Route::post("/users/logout", [AuthController::class, "logout"])->name("users.logout")->middleware("auth:sanctum");
 Route::post("/forgot-password", [AuthController::class, "forgotPassword"])->name("password.forgot")->middleware("guest");
-Route::post("/reset-password",[AuthController::class,""])->name("password.reset")->middleware("guest");
+Route::post("/reset-password",[AuthController::class,"resetPassword"])->name("password.reset")->middleware("guest");

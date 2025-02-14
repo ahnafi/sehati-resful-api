@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\UserResetPassword;
 use Hash;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use Illuminate\Http\Request;
 use Password;
+use Str;
 
 class AuthController extends Controller
 {
@@ -85,6 +88,29 @@ class AuthController extends Controller
                 "email" => [__($status)]
             ]
         ], 422);
+    }
+
+    public function resetPassword(UserResetPassword $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $status = Password::reset($data, function (User $user, string $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
+
+            $user->save();
+
+            event(new PasswordReset($user));
+        });
+
+        if ($status == Password::PASSWORD_RESET) {
+            return response()->json([
+                "data" => [__($status)]
+            ]);
+        }
+
+        return response()->json(["errors" => [__($status)]]);
     }
 
 }
