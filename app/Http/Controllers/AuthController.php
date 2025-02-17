@@ -7,6 +7,9 @@ use App\Http\Requests\UserResetPassword;
 use Hash;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\UserLoginRequest;
@@ -24,6 +27,8 @@ class AuthController extends Controller
         $user = User::create($data);
 
         $token = $user->createToken("auth_token")->plainTextToken;
+
+        event(new Registered($user));
 
         return response()->json([
             "data" => [
@@ -61,7 +66,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        // $request->user()->tokens()->delete(); delete token from all device 
+        // $request->user()->tokens()->delete(); delete token from all device
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
@@ -113,4 +118,41 @@ class AuthController extends Controller
         return response()->json(["errors" => [__($status)]]);
     }
 
+    public function verifyEmail(EmailVerificationRequest $request): JsonResponse
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+
+            return response()->json([
+                "data" =>
+                    ["message" => ['Email Already Verified']]
+            ]);
+        }
+
+        if ($request->user()->markEmailAsVerified()) {
+            event(new Verified($request->user()));
+        }
+
+        return response()->json([
+            "data" =>
+                ["message" => ['Successfully Verified']]
+        ]);
+    }
+
+    public function VerifyNotification(Request $request): JsonResponse
+    {
+
+        if ($request->user()->hasVerifiedEmail()) {
+            return response()->json([
+                "data" =>
+                    ["message" => ['Email Already Verified']]
+            ]);
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return response()->json([
+            "data" =>
+                ["message" => ['Verification link sent!']]
+        ]);
+    }
 }
