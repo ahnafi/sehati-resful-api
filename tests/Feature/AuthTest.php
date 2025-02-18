@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -14,6 +15,7 @@ class AuthTest extends TestCase
         parent::setUp();
         User::query()->delete();
     }
+
     public function testUserRegisterSuccess()
     {
         $this->post("/api/users/register", [
@@ -156,7 +158,7 @@ class AuthTest extends TestCase
 
     public function testUserLogoutUnauthorized()
     {
-        $this->post("/api/users/logout", [], ["Accept"=> "application/json"])
+        $this->post("/api/users/logout", [], ["Accept" => "application/json"])
             ->assertStatus(401)
             ->assertJson([
                 "errors" => [
@@ -164,5 +166,39 @@ class AuthTest extends TestCase
                 ]
             ]);
     }
+
+    public function testUserForgotPasswordSuccess()
+    {
+        $user = User::factory()->create();
+
+        $this->post("/api/forgot-password", ["email" => $user->email], ["Accept" => "application/json"])
+            ->assertStatus(200)
+            ->assertJson(["data" => [
+                "message" => ["We have emailed your password reset link."]
+            ]]);
+    }
+
+    public function testUserForgotPasswordEmailNotFound()
+    {
+        $user = User::factory()->create();
+
+        $this->post("/api/forgot-password", ["email" => "gajelas@gmail.com"], ["Accept" => "application/json"])
+            ->assertStatus(422)
+            ->assertJson(["errors" => [
+                "email" => ["We can't find a user with that email address."]
+            ]]);
+    }
+
+    public function testUserForgotPasswordEmailFieldIsRequired()
+    {
+        $user = User::factory()->create();
+
+        $this->post("/api/forgot-password", [], ["Accept" => "application/json"])
+            ->assertStatus(400)
+            ->assertJson(["errors" => [
+                "email" => ["The email field is required."]
+            ]]);
+    }
+
 
 }
