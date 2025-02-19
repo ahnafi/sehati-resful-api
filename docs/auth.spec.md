@@ -57,3 +57,54 @@
     }
 }
 ```
+
+## login user api 
+
+```json
+{
+    "Accept": "application/json"
+}
+```
+
+- request body
+
+```json
+{
+    "email": "required|string|email",
+    "password": "required|string"
+}
+```
+
+- response success 201
+
+```json
+{
+    "data": {
+        "user": {
+            "id": "int",
+            "name": "string",
+            "email": "string",
+            "address": "string",
+            "created_at": "timestamp",
+            "updated_at": "timestamp"
+        },
+        "token_type": "string",
+        "token": "string"
+    }
+}
+```
+
+- response errors 400
+
+```json
+{
+    "errors": {
+        "email": [
+            "string"
+        ],
+        "password": [
+            "string"
+        ]
+    }
+}
+```
