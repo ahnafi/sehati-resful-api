@@ -112,11 +112,13 @@ class AuthController extends Controller
 
         if ($status == Password::PASSWORD_RESET) {
             return response()->json([
-                "data" => [__($status)]
+                "data" => [
+                    "message" => [__($status)]
+                ]
             ]);
         }
 
-        return response()->json(["errors" => [__($status)]]);
+        return response()->json(["errors" => ["message" => [__($status)]]], 422);
     }
 
     public function verifyEmail(EmailVerificationRequest $request): JsonResponse
