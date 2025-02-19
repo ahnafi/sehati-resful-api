@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -200,5 +201,133 @@ class AuthTest extends TestCase
             ]]);
     }
 
+    public function testUserResetPasswordSuccess()
+    {
+        $user = User::factory()->create([
+            "name" => "test",
+            "email" => "test@example.com"
+        ]);
+
+        $token = Password::createToken($user);
+        Log::info($token);
+
+        $this->post("/api/reset-password", [
+            "token" => $token,
+            "email" => "test@example.com",
+            "password" => "cobalagi123@TT",
+            "password_confirmation" => "cobalagi123@TT"
+        ])->assertStatus(200)
+            ->assertJson([
+                "data" => [
+                    "message" => ["Your password has been reset."]
+                ]
+            ]);
+    }
+
+    public function testUserResetPasswordFieldRequired()
+    {
+        $user = User::factory()->create([
+            "name" => "test",
+            "email" => "test@example.com"
+        ]);
+
+        $token = Password::createToken($user);
+        Log::info($token);
+
+        $this->post("/api/reset-password", [
+//            "token" => $token,
+//            "email" => "test@example.com",
+//            "password" => "cobalagi123@TT",
+//            "password_confirmation" => "cobalagi123@TT"
+        ])->assertStatus(400)
+            ->assertJson([
+                "errors" => [
+                    "token" => [
+                        "The token field is required."
+                    ],
+                    "email" => [
+                        "The email field is required."
+                    ],
+                    "password" => [
+                        "The password field is required."
+                    ]
+                ]
+            ]);
+    }
+
+    public function testUserResetPasswordTokenNotValid()
+    {
+        $user = User::factory()->create([
+            "name" => "test",
+            "email" => "test@example.com"
+        ]);
+
+        $token = Password::createToken($user);
+        Log::info($token);
+
+        $this->post("/api/reset-password", [
+            "token" => "token",
+            "email" => "test@example.com",
+            "password" => "cobalagi123@TT",
+            "password_confirmation" => "cobalagi123@TT"
+        ])->assertStatus(422)
+            ->assertJson([
+                "errors" => [
+                    "message" => [
+                        "This password reset token is invalid."
+                    ],
+                ]
+            ]);
+    }
+
+    public function testUserResetPasswordNotConfirm()
+    {
+        $user = User::factory()->create([
+            "name" => "test",
+            "email" => "test@example.com"
+        ]);
+
+        $token = Password::createToken($user);
+        Log::info($token);
+
+        $this->post("/api/reset-password", [
+            "token" => "token",
+            "email" => "test@example.com",
+            "password" => "cobalagi123@TT",
+//            "password_confirmation" => "cobalagi123@TT"
+        ])->assertStatus(400)
+            ->assertJson([
+                "errors" => [
+                    "password" => [
+                        "The password field confirmation does not match."
+                    ]
+                ]
+            ]);
+    }
+
+    public function testUserResetPasswordUserEmailNotFound()
+    {
+        $user = User::factory()->create([
+            "name" => "test",
+            "email" => "test@example.com"
+        ]);
+
+        $token = Password::createToken($user);
+        Log::info($token);
+
+        $this->post("/api/reset-password", [
+            "token" => "token",
+            "email" => "test1111@example.com",
+            "password" => "cobalagi123@TT",
+            "password_confirmation" => "cobalagi123@TT"
+        ])->assertStatus(422)
+            ->assertJson([
+                "errors" => [
+                    "message" => [
+                        "We can't find a user with that email address."
+                    ]
+                ]
+            ]);
+    }
 
 }
