@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -329,5 +332,50 @@ class AuthTest extends TestCase
                 ]
             ]);
     }
+
+    public function test_verify_email_already_verified()
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson(URL::signedRoute('verification.verify', ['id' => $user->id, 'hash' => sha1($user->email)]));
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'message' => ['Email Already Verified']
+                ]
+            ]);
+    }
+
+    public function test_verify_email_successfully()
+    {
+        $user = User::factory()->create(['email_verified_at' => null]);
+
+        Event::fake();
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson(URL::signedRoute('verification.verify', ['id' => $user->id, 'hash' => sha1($user->email)]));
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'message' => ['Successfully Verified']
+                ]
+            ]);
+
+        Event::assertDispatched(Verified::class);
+    }
+
+    public function test_verify_email_invalid_signature()
+    {
+        $user = User::factory()->create(['email_verified_at' => null]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson("/email/verify/{$user->id}/invalid-hash");
+
+        $response->assertStatus(404);
+    }
+
 
 }
