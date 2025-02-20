@@ -377,5 +377,34 @@ class AuthTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_verify_notification_already_verified()
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/email/verification-notification');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'message' => ['Email Already Verified']
+                ]
+            ]);
+    }
+
+    public function test_verify_notification_sent_successfully()
+    {
+        $user = User::factory()->create(['email_verified_at' => null]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/email/verification-notification');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    'message' => ['Verification link sent!']
+                ]
+            ]);
+    }
 
 }
