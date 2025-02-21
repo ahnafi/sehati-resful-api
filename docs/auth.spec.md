@@ -2,6 +2,8 @@
 
 ## register user api
 
+method POST
+
 - header
 
 ```json
@@ -58,8 +60,11 @@
 }
 ```
 
-## login user api 
+## login user api
 
+Method POST
+
+- header
 ```json
 {
     "Accept": "application/json"
@@ -104,6 +109,37 @@
         ],
         "password": [
             "string"
+        ]
+    }
+}
+```
+
+## logout user api
+
+Method POST
+
+- header
+```json
+{
+    "Accept": "application/json"
+}
+```
+
+- response success 200
+
+```json
+{
+    "data": true
+}
+```
+
+- response errors 401
+
+```json
+{
+    "errors": {
+        "message": [
+            "Unauthorized"
         ]
     }
 }
